@@ -19,10 +19,10 @@ return {
                 return nil
             end
 
-            --local ok, err = redis:flush(plugin.config)
-            --if not ok then
-            --    return kong.response.exit(500, { message = err })
-            --end
+            local ok, err = redis:info(plugin.config)
+            if not ok then
+                return kong.response.exit(500, { message = err })
+            end
 
             return kong.response.exit(204)
         end

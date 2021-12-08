@@ -26,7 +26,7 @@ local function red_connect(opts)
     -- Split redis_cluster_nodes_hosts_ports
     for _, value in ipairs(opts.redis_cluster_nodes_hosts_ports) do
         local node_info = split(value, ":")
-        table_insert(nodes, {ip = node_info[1], port = node_info[2]})
+        table_insert(nodes, { ip = node_info[1], port = node_info[2] })
     end
 
     if #nodes == 0 then
@@ -37,14 +37,6 @@ local function red_connect(opts)
     local config = {
         name = opts.redis_cluster_name,
         serv_list = nodes,
-        --{                           --redis cluster node list(host and port),
-        --    { ip = "127.0.0.1", port = 6379 },
-        --    { ip = "127.0.0.1", port = 6380 },
-        --    { ip = "127.0.0.1", port = 6381 },
-        --    { ip = "127.0.0.1", port = 6382 },
-        --    { ip = "127.0.0.1", port = 6383 },
-        --    { ip = "127.0.0.1", port = 6384 }
-        --},
         connect_timeout = (opts.redis_cluster_connect_timeout or 1000),
         read_timeout = (opts.redis_cluster_connect_timeout or 1000),
         send_timeout = (opts.redis_cluster_connect_timeout or 1000),
@@ -169,9 +161,29 @@ function _M:delete(conf, key)
     end
 
     -- borro entrada de redis
-    local deleted, err = red:del(key)
+    local _, err = red:del(key)
     if err then
         kong.log.err("failed to delete the key from Redis: ", err)
+        return nil, err
+    end
+
+    return true
+end
+
+-- Obtiene información del cluster
+function _M:info(conf)
+    local red, err_redis = red_connect(conf)
+
+    -- Compruebo si he conectado a Redis bien
+    if not red then
+        kong.log.err("failed to get the Redis connection: ", err_redis)
+        return nil, "there is no Redis connection established"
+    end
+
+    -- aquí borro toda la cache de redis de forma asíncrona
+    local _, err = red:cluster("info")
+    if err then
+        kong.log.err("failed to get cluster info from Redis: ", err)
         return nil, err
     end
 
@@ -189,7 +201,7 @@ function _M:flush(conf)
     end
 
     -- aquí borro toda la cache de redis de forma asíncrona
-    local flushed, err = red:flushdb("async")
+    local _, err = red:flushdb("async")
     if err then
         kong.log.err("failed to flush the database from Redis: ", err)
         return nil, err
