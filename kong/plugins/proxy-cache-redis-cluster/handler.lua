@@ -300,7 +300,7 @@ function ProxyCacheHandler:access(conf)
     -- Si la versión de los datos cacheados no es la misma que la actual, purgo (para evitar errores)
     if res.version ~= CACHE_VERSION then
         kong.log.notice("cache format mismatch, purging ", the_cache_key)
-        redis:purge(conf, the_cache_key)
+        redis:delete(conf, the_cache_key)
         return signal_cache_req(ctx, the_cache_key, "Bypass")
     end
 

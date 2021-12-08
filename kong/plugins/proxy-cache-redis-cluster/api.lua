@@ -75,7 +75,7 @@ return {
             end
 
             if cache_val then
-                local _, err2 = redis:purge(plugin.config, self.params.cache_key)
+                local _, err2 = redis:delete(plugin.config, self.params.cache_key)
                 if err2 then
                     return kong.response.exit(500, err2)
                 end

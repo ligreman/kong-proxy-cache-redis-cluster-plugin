@@ -1,4 +1,4 @@
-package = "kong-proxy-cache-redis-plugin"
+package = "kong-proxy-cache-redis-cluster-plugin"
 version = "1.0.0-0"
 
 source = {

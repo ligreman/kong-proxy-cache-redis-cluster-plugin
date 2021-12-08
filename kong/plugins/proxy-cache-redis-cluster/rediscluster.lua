@@ -1,6 +1,6 @@
 local redis = require "resty.redis"
 local resty_lock = require "resty.lock"
-local xmodem = require "resty.xmodem"
+local xmodem = require "kong.plugins.proxy-cache-redis-cluster.xmodem"
 local setmetatable = setmetatable
 local tostring = tostring
 local string = string
@@ -82,10 +82,13 @@ local function check_auth(self, redis_client)
 end
 
 local function release_connection(red, config)
+    ngx.log(ngx.ERR, "KEEPALIVE")
     local ok,err = red:set_keepalive(config.keepalive_timeout
             or DEFAULT_KEEPALIVE_TIMEOUT, config.keepalive_cons or DEFAULT_KEEPALIVE_CONS)
     if not ok then
-        ngx.log(ngx.ERR,"set keepalive failed:", err)
+        ngx.log(ngx.ERR, "set keepalive failed:", err)
+    else
+        ngx.log(ngx.ERR, "set keepalive ok:", ok)
     end
 end
 
