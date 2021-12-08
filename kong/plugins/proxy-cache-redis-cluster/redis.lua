@@ -75,12 +75,12 @@ local function red_connect(opts)
         --refresh_lock_key = "refresh_lock",      --shared dictionary name prefix for lock of each worker, if default value is not used
         name = "testCluster",                   --rediscluster name
         serv_list = {                           --redis cluster node list(host and port),
-            { ip = "127.0.0.1", port = 7001 },
-            { ip = "127.0.0.1", port = 7002 },
-            { ip = "127.0.0.1", port = 7003 },
-            { ip = "127.0.0.1", port = 7004 },
-            { ip = "127.0.0.1", port = 7005 },
-            { ip = "127.0.0.1", port = 7006 }
+            { ip = "127.0.0.1", port = 6379 },
+            { ip = "127.0.0.1", port = 6380 },
+            { ip = "127.0.0.1", port = 6381 },
+            { ip = "127.0.0.1", port = 6382 },
+            { ip = "127.0.0.1", port = 6383 },
+            { ip = "127.0.0.1", port = 6384 }
         },
         keepalive_timeout = 60000,              --redis connection pool idle timeout
         keepalive_cons = 1000,                  --redis connection pool size
