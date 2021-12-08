@@ -108,7 +108,12 @@ local function try_hosts_slots(self, serv_list)
         return nil, "failed to fetch slots, serv_list config is empty"
     end
 
+    ngx.log(ngx.ERR, "*** TRY HOSTS SLOTS")
+
+
     for i = 1, #serv_list do
+        ngx.log(ngx.ERR, "*** SERV LIST ", serv_list[i].ip .. ":" .. serv_list[i].port)
+
         local ip = serv_list[i].ip
         local port = serv_list[i].port
         local redis_client = redis:new()
@@ -126,6 +131,9 @@ local function try_hosts_slots(self, serv_list)
                 table_insert(errors, max_connection_timeout_err)
                 break
             end
+
+            ngx.log(ngx.ERR, "*** TRY CONNECT: ", self.config.connect_opts)
+
 
             ok, err = redis_client:connect(ip, port, self.config.connect_opts)
             if ok then break end
@@ -219,6 +227,9 @@ function _M.fetch_slots(self)
 
     local serv_list_combined
 
+    ngx.log(ngx.ERR, "*** Fetch slots: ", self.config.serv_list)
+
+
     -- if a cached serv_list is present, start with that
     if serv_list_cached then
         serv_list_combined = serv_list_cached.serv_list
@@ -247,13 +258,13 @@ end
 function _M.refresh_slots(self)
     local worker_id = ngx.worker.id()
     local lock, err, elapsed, ok
-    lock, err = resty_lock:new(self.config.dict_name or DEFAULT_SHARED_DICT_NAME, {time_out = 0})
+    lock, err = resty_lock:new(DEFAULT_SHARED_DICT_NAME, {time_out = 0})
     if not lock then
         ngx.log(ngx.ERR, "failed to create lock in refresh slot cache: ", err)
         return nil, err
     end
 
-    local refresh_lock_key = (self.config.refresh_lock_key or DEFAULT_REFRESH_DICT_NAME) .. worker_id
+    local refresh_lock_key = DEFAULT_REFRESH_DICT_NAME .. worker_id
     elapsed, err = lock:lock(refresh_lock_key)
     if not elapsed then
         return nil, 'race refresh lock fail, ' .. err
@@ -274,17 +285,22 @@ function _M.init_slots(self)
         return true
     end
     local ok, lock, elapsed, err
-    lock, err = resty_lock:new(self.config.dict_name or DEFAULT_SHARED_DICT_NAME)
+    lock, err = resty_lock:new(DEFAULT_SHARED_DICT_NAME)
     if not lock then
         ngx.log(ngx.ERR, "failed to create lock in initialization slot cache: ", err)
         return nil, err
     end
+
+    ngx.log(ngx.ERR, "*** Creado resty_lock")
 
     elapsed, err = lock:lock("redis_cluster_slot_" .. self.config.name)
     if not elapsed then
         ngx.log(ngx.ERR, "failed to acquire the lock in initialization slot cache: ", err)
         return nil, err
     end
+
+    ngx.log(ngx.ERR, "*** lock:lock")
+
 
     if slot_cache[self.config.name] then
         ok, err = lock:unlock()

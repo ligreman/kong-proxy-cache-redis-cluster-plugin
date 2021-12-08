@@ -46,8 +46,10 @@ The plugin works in the same way as the official `proxy-cache` plugin, in terms 
 You must create the custom dictionary defined in `dict_name`, or the default dictionary:
 ```
 # In the kong.conf file
-nginx_http_lua_shared_dict=redis_cluster_slot_locks 8m; lua_shared_dict refresh_lock 5m
+nginx_http_lua_shared_dict=redis_cluster_slot_locks 8m; 
 ```
+
+[//]: # (lua_shared_dict refresh_lock 5m)
 
 |Parameter|Type|Required|Default|Description|
 |---|---|---|---|---|

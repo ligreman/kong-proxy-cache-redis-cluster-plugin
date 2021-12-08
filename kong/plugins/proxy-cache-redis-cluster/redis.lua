@@ -71,8 +71,8 @@ local _M = {}
 -- Conecto al cluster de Redis
 local function red_connect(opts)
     local config = {
-        dict_name = "test_locks",               --shared dictionary name for locks, if default value is not used
-        refresh_lock_key = "refresh_lock",      --shared dictionary name prefix for lock of each worker, if default value is not used
+        --dict_name = "test_locks",               --shared dictionary name for locks, if default value is not used
+        --refresh_lock_key = "refresh_lock",      --shared dictionary name prefix for lock of each worker, if default value is not used
         name = "testCluster",                   --rediscluster name
         serv_list = {                           --redis cluster node list(host and port),
             { ip = "127.0.0.1", port = 7001 },
@@ -88,7 +88,7 @@ local function red_connect(opts)
         read_timeout = 1000,
         send_timeout = 1000,
         max_redirection = 5,                    --maximum retry attempts for redirection
-        max_connection_attempts = 1,
+        max_connection_attempts = 3,
         auth = nil,
         connect_opts = {
             ssl = false,
