@@ -227,7 +227,7 @@ function _M.fetch_slots(self)
 
     local serv_list_combined
 
-    ngx.log(ngx.ERR, "*** Fetch slots: ", self.config.serv_list)
+    ngx.log(ngx.ERR, "*** Fetch slots")
 
 
     -- if a cached serv_list is present, start with that
