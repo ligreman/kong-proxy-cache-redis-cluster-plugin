@@ -1,8 +1,9 @@
 local cjson = require "cjson.safe"
---local redis = require "resty.redis"
 local redis_cluster = require "kong.plugins.proxy-cache-redis-cluster.rediscluster"
 
+local ipairs = ipairs
 local ngx = ngx
+local table_insert = table.insert
 local type = type
 
 local function is_present(str)
@@ -11,145 +12,66 @@ end
 
 local _M = {}
 
----- Conecta a redis
---local function red_connect(opts)
---    return red_cluster_connect(opts)
---
---    --
---    --
---    --
---    local red, err_redis = redis:new()
---
---    if err_redis then
---        kong.log.err("error connecting to Redis: ", err_redis);
---        return nil, err_redis
---    end
---
---    local redis_opts = {}
---    -- use a special pool name only if database is set to non-zero
---    -- otherwise use the default pool name host:port
---    redis_opts.pool = opts.redis_database and opts.redis_host .. ":" .. opts.redis_port .. ":" .. opts.redis_database
---
---    red:set_timeout(opts.redis_timeout)
---
---    -- conecto
---    local ok, err = red:connect(opts.redis_host, opts.redis_port, redis_opts)
---    if not ok then
---        kong.log.err("failed to connect to Redis: ", err)
---        return nil, err
---    end
---
---    local times, err2 = red:get_reused_times()
---    if err2 then
---        kong.log.err("failed to get connect reused times: ", err2)
---        return nil, err
---    end
---
---    if times == 0 then
---        if is_present(opts.redis_password) then
---            local ok3, err3 = red:auth(opts.redis_password)
---            if not ok3 then
---                kong.log.err("failed to auth Redis: ", err3)
---                return nil, err
---            end
---        end
---
---        if opts.redis_database ~= 0 then
---            -- Only call select first time, since we know the connection is shared
---            -- between instances that use the same redis database
---            local ok4, err4 = red:select(opts.redis_database)
---            if not ok4 then
---                kong.log.err("failed to change Redis database: ", err4)
---                return nil, err
---            end
---        end
---    end
---
---    return red
---end
+local function split(s, delimiter)
+    local result = {};
+    for m in (s .. delimiter):gmatch("(.-)" .. delimiter) do
+        table_insert(result, m);
+    end
+    return result;
+end
 
 -- Conecto al cluster de Redis
 local function red_connect(opts)
+    local nodes = {}
+    -- Split redis_cluster_nodes_hosts_ports
+    for _, value in ipairs(opts.redis_cluster_nodes_hosts_ports) do
+        local node_info = split(value, ":")
+        table_insert(nodes, {ip = node_info[1], port = node_info[2]})
+    end
+
+    if #nodes == 0 then
+        kong.log.err("error, no Redis nodes set in the configuration");
+        return nil, "no Redis nodes configured"
+    end
+
     local config = {
-        --dict_name = "test_locks",               --shared dictionary name for locks, if default value is not used
-        --refresh_lock_key = "refresh_lock",      --shared dictionary name prefix for lock of each worker, if default value is not used
-        name = "testCluster",                   --rediscluster name
-        serv_list = {                           --redis cluster node list(host and port),
-            { ip = "127.0.0.1", port = 6379 },
-            { ip = "127.0.0.1", port = 6380 },
-            { ip = "127.0.0.1", port = 6381 },
-            { ip = "127.0.0.1", port = 6382 },
-            { ip = "127.0.0.1", port = 6383 },
-            { ip = "127.0.0.1", port = 6384 }
-        },
-        keepalive_timeout = 60000,              --redis connection pool idle timeout
-        keepalive_cons = 1000,                  --redis connection pool size
-        connect_timeout = 1000,              --timeout while connecting
-        read_timeout = 1000,
-        send_timeout = 1000,
-        max_redirection = 5,                    --maximum retry attempts for redirection
-        max_connection_attempts = 3,
-        auth = nil,
+        name = opts.redis_cluster_name,
+        serv_list = nodes,
+        --{                           --redis cluster node list(host and port),
+        --    { ip = "127.0.0.1", port = 6379 },
+        --    { ip = "127.0.0.1", port = 6380 },
+        --    { ip = "127.0.0.1", port = 6381 },
+        --    { ip = "127.0.0.1", port = 6382 },
+        --    { ip = "127.0.0.1", port = 6383 },
+        --    { ip = "127.0.0.1", port = 6384 }
+        --},
+        connect_timeout = (opts.redis_cluster_connect_timeout or 1000),
+        read_timeout = (opts.redis_cluster_connect_timeout or 1000),
+        send_timeout = (opts.redis_cluster_connect_timeout or 1000),
+        -- redis connection pool idle timeout
+        keepalive_timeout = (opts.redis_cluster_keepalive_timeout or 60000),
+        -- redis connection pool size
+        keepalive_cons = (opts.redis_cluster_connection_pool_size or 1000),
+        max_redirection = (opts.redis_cluster_max_redirection or 16),
+        max_connection_attempts = (opts.redis_cluster_max_connection_attempts or 3),
+        auth = (opts.redis_cluster_password or nil),
         connect_opts = {
-            ssl = false,
+            ssl = (opts.redis_cluster_use_ssl_connection or false),
             pool = "redis-cluster-connection-pool",
+            -- we leave the 30 default pool, shared among pool_size and backlog https://github.com/openresty/lua-nginx-module#lua_socket_pool_size
             pool_size = 20,
             backlog = 10
         }
     }
 
-    if is_present(opts.redis_password) then
-        config.auth = opts.redis_password
+    if is_present(opts.redis_cluster_password) then
+        config.auth = opts.redis_cluster_password
     end
 
     local red, err_redis = redis_cluster:new(config)
     if err_redis then
         kong.log.err("error connecting to Redis: ", err_redis);
         return nil, err_redis
-    end
-
-
-    --
-    --
-    --
-    --
-    --local red, err_redis = redis:new()
-    --
-    --if err_redis then
-    --    kong.log.err("error connecting to Redis: ", err_redis);
-    --    return nil, err_redis
-    --end
-    --
-    --local redis_opts = {}
-    ---- use a special pool name only if database is set to non-zero
-    ---- otherwise use the default pool name host:port
-    --redis_opts.pool = opts.redis_database and opts.redis_host .. ":" .. opts.redis_port .. ":" .. opts.redis_database
-    --
-    --red:set_timeout(opts.redis_timeout)
-    --
-    ---- conecto
-    --local ok, err = red:connect(opts.redis_host, opts.redis_port, redis_opts)
-    --if not ok then
-    --    kong.log.err("failed to connect to Redis: ", err)
-    --    return nil, err
-    --end
-
-    local times, err2 = red:get_reused_times()
-    if err2 then
-        kong.log.err("failed to get connect reused times: ", err2)
-        return nil, err
-    end
-
-    if times == 0 then
-        if opts.redis_database ~= 0 then
-            -- Only call select first time, since we know the connection is shared
-            -- between instances that use the same redis database
-            local ok4, err4 = red:select(opts.redis_database)
-            if not ok4 then
-                kong.log.err("failed to change Redis database: ", err4)
-                return nil, err
-            end
-        end
     end
 
     return red
@@ -180,12 +102,6 @@ function _M:fetch(conf, key)
             return nil, err
         end
     end
-
-    --local ok, err2 = red:set_keepalive(10000, 100)
-    --if not ok then
-    --    kong.log.err("failed to set Redis keepalive: ", err2)
-    --    return nil, err2
-    --end
 
     -- decode object from JSON to table
     local req_obj = cjson.decode(req_json)
@@ -234,13 +150,6 @@ function _M:store(conf, key, req_obj, req_ttl)
         return nil, err
     end
 
-    -- keepalive de la conexión: max_timeout, connection pool
-    --local ok, err2 = red:set_keepalive(10000, 100)
-    --if not ok then
-    --    kong.log.err("failed to set Redis keepalive: ", err2)
-    --    return nil, err2
-    --end
-
     return true and req_json or nil, err
 end
 
@@ -266,12 +175,6 @@ function _M:delete(conf, key)
         return nil, err
     end
 
-    --local ok, err2 = red:set_keepalive(10000, 100)
-    --if not ok then
-    --    kong.log.err("failed to set Redis keepalive: ", err2)
-    --    return nil, err2
-    --end
-
     return true
 end
 
@@ -291,12 +194,6 @@ function _M:flush(conf)
         kong.log.err("failed to flush the database from Redis: ", err)
         return nil, err
     end
-
-    --local ok, err2 = red:set_keepalive(10000, 100)
-    --if not ok then
-    --    kong.log.err("failed to set Redis keepalive: ", err2)
-    --    return nil, err2
-    --end
 
     return true
 end

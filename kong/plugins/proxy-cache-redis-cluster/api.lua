@@ -4,7 +4,8 @@ local kong = kong
 return {
     ["/plugins/:plugin_id/proxy-cache-redis-cluster"] = {
 
-        DELETE = function(self)
+        -- Información del cluster
+        GET = function(self)
             -- Busco el plugin
             local plugin, errp = kong.db.plugins:select({ id = self.params.plugin_id })
 
@@ -18,10 +19,10 @@ return {
                 return nil
             end
 
-            local ok, err = redis:flush(plugin.config)
-            if not ok then
-                return kong.response.exit(500, { message = err })
-            end
+            --local ok, err = redis:flush(plugin.config)
+            --if not ok then
+            --    return kong.response.exit(500, { message = err })
+            --end
 
             return kong.response.exit(204)
         end

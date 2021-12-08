@@ -41,6 +41,8 @@ It also bypass the no-cache and no-store headers. The other checks, like respons
 
 The plugin works in the same way as the official `proxy-cache` plugin, in terms of the way it generates the cache key, or how to assign it to a service or route. [Documentation for the Proxy Cache plugin](https://docs.konghq.com/hub/kong-inc/proxy-cache/)
 
+Note that Redis Cluster does not support multiple databases like the stand alone version of Redis. There is just database 0 and the SELECT command is not allowed.
+
 ## Configuration
 
 You must create the custom dictionary defined in `dict_name`, or the default dictionary:
@@ -68,9 +70,8 @@ nginx_http_lua_shared_dict=redis_cluster_slot_locks 100k;
 |`config.storage_ttl`|integer|*required*| |Number of seconds to keep resources in the storage backend. This value is independent of cache_ttl or resource TTLs defined by Cache-Control behaviors. The resources may be stored for up to `storage_ttl` secs but served only for `cache_ttl`.|
 |`config.redis_host`|string|*required*| |The hostname or IP address of the redis server.|
 |`config.redis_port`|integer|*optional*|6379|The port of the redis server.|
-|`config.redis_timeout`|integer|*optional*|2000|The timeout in milliseconds for the redis connection.|
-|`config.redis_password`|string|*optional*| |The password (if required) to authenticate to the redis server.|
-|`config.redis_database`|string|*optional*|0|The Redis database to use for caching the resources.|
+|`config.redis_cluster_keepalive_timeout`|integer|*optional*|2000|The timeout in milliseconds for the redis connection.|
+|`config.redis_cluster_password`|string|*optional*| |The password (if required) to authenticate to the redis server.|
 
 ## Cache-Control header
 
