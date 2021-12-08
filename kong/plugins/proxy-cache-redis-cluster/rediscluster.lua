@@ -132,7 +132,7 @@ local function try_hosts_slots(self, serv_list)
                 break
             end
 
-            ngx.log(ngx.ERR, "*** TRY CONNECT: ", self.config.connect_opts)
+            ngx.log(ngx.ERR, "*** TRY CONNECT")
 
 
             ok, err = redis_client:connect(ip, port, self.config.connect_opts)
