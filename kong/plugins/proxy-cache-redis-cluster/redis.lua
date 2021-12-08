@@ -23,8 +23,8 @@ end
 -- Conecto al cluster de Redis
 local function red_connect(opts)
     local nodes = {}
-    -- Split redis_cluster_nodes_hosts_ports
-    for _, value in ipairs(opts.redis_cluster_nodes_hosts_ports) do
+    -- Split cluster_nodes_hosts_ports
+    for _, value in ipairs(opts.cluster_nodes_hosts_ports) do
         local node_info = split(value, ":")
         table_insert(nodes, { ip = node_info[1], port = node_info[2] })
     end
@@ -35,20 +35,20 @@ local function red_connect(opts)
     end
 
     local config = {
-        name = opts.redis_cluster_name,
+        name = opts.cluster_name,
         serv_list = nodes,
-        connect_timeout = (opts.redis_cluster_connect_timeout or 1000),
-        read_timeout = (opts.redis_cluster_connect_timeout or 1000),
-        send_timeout = (opts.redis_cluster_connect_timeout or 1000),
+        connect_timeout = (opts.cluster_connect_timeout or 1000),
+        read_timeout = (opts.cluster_connect_timeout or 1000),
+        send_timeout = (opts.cluster_connect_timeout or 1000),
         -- redis connection pool idle timeout
-        keepalive_timeout = (opts.redis_cluster_keepalive_timeout or 60000),
+        keepalive_timeout = (opts.cluster_keepalive_timeout or 60000),
         -- redis connection pool size
-        keepalive_cons = (opts.redis_cluster_connection_pool_size or 1000),
-        max_redirection = (opts.redis_cluster_max_redirection or 16),
-        max_connection_attempts = (opts.redis_cluster_max_connection_attempts or 3),
-        auth = (opts.redis_cluster_password or nil),
+        keepalive_cons = (opts.cluster_connection_pool_size or 1000),
+        max_redirection = (opts.cluster_max_redirection or 16),
+        max_connection_attempts = (opts.cluster_max_connection_attempts or 3),
+        auth = (opts.cluster_password or nil),
         connect_opts = {
-            ssl = (opts.redis_cluster_use_ssl_connection or false),
+            ssl = (opts.cluster_use_ssl_connection or false),
             pool = "redis-cluster-connection-pool",
             -- we leave the 30 default pool, shared among pool_size and backlog https://github.com/openresty/lua-nginx-module#lua_socket_pool_size
             pool_size = 20,
@@ -56,8 +56,8 @@ local function red_connect(opts)
         }
     }
 
-    if is_present(opts.redis_cluster_password) then
-        config.auth = opts.redis_cluster_password
+    if is_present(opts.cluster_password) then
+        config.auth = opts.cluster_password
     end
 
     local red, err_redis = redis_cluster:new(config)

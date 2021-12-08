@@ -58,43 +58,43 @@ return {
                     type = "array",
                     elements = { type = "string" },
                 } },
-                { redis_cluster_name = {
+                { cluster_name = {
                     type = "string",
                     default = "myRedisCluster",
                     len_min = 0,
                     required = true,
                 } },
-                { redis_cluster_nodes_hosts_ports = {
+                { cluster_nodes_hosts_ports = {
                     type = "array",
                     default = { "host:port", "host2:port2" },
                     elements = { type = "string" },
                     required = true,
                 } },
-                { redis_cluster_password = {
+                { cluster_password = {
                     type = "string",
                     len_min = 0,
                 } },
-                { redis_cluster_connect_timeout = {
+                { cluster_connect_timeout = {
                     type = "number",
                     default = 1000,
                 } },
-                { redis_cluster_keepalive_timeout = {
+                { cluster_keepalive_timeout = {
                     type = "number",
                     default = 60000,
                 } },
-                { redis_cluster_connection_pool_size = {
+                { cluster_connection_pool_size = {
                     type = "number",
                     default = 1000,
                 } },
-                { redis_cluster_max_redirection = {
+                { cluster_max_redirection = {
                     type = "number",
                     default = 16,
                 } },
-                { redis_cluster_max_connection_attempts = {
+                { cluster_max_connection_attempts = {
                     type = "number",
                     default = 3,
                 } },
-                { redis_cluster_use_ssl_connection = {
+                { cluster_use_ssl_connection = {
                     type = "boolean",
                     default = false,
                 } },
