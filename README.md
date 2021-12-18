@@ -16,7 +16,7 @@ Note that Redis Cluster does not support multiple databases like the stand alone
 
 ## Installation
 
-You must create the custom dictionary defined in `dict_name`, or the default dictionary:
+You must create the custom dictionary defined in `dict_name`, or the default dictionary `redis_cluster_slot_locks`:
 
 ```
 # In the kong.conf file
