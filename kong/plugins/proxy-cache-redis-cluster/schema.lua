@@ -1,5 +1,5 @@
 return {
-    name = "proxy-cache-redis",
+    name = "proxy-cache-redis-cluster",
     fields = {
         { config = {
             type = "record",
@@ -69,6 +69,10 @@ return {
                     default = { "host:port", "host2:port2" },
                     elements = { type = "string" },
                     required = true,
+                } },
+                { cluster_user = {
+                    type = "string",
+                    len_min = 0,
                 } },
                 { cluster_password = {
                     type = "string",

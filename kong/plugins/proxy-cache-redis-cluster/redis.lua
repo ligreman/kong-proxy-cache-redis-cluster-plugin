@@ -60,6 +60,11 @@ local function red_connect(opts)
         config.auth = opts.cluster_password
     end
 
+    -- Support for ACL (we send AUTH username password)
+    if is_present(opts.cluster_user) and is_present(opts.cluster_password) then
+        config.auth = opts.cluster_user .. " " .. opts.cluster_password
+    end
+
     local red, err_redis = redis_cluster:new(config)
     if err_redis then
         kong.log.err("error connecting to Redis: ", err_redis);
