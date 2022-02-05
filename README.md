@@ -14,6 +14,14 @@ The plugin works in the same way as the official `proxy-cache` plugin, in terms 
 
 Note that Redis Cluster does not support multiple databases like the stand alone version of Redis. There is just database 0 and the SELECT command is not allowed.
 
+## Kong Plugin Priority
+
+This plugin has its priority modified to be executed before the rate-limit plungin. This way a request that is answered by the cache (a cache Hit), does not count in the rate-limit.
+
+The original proxy-cache plugin from Kong Hub has a priority of 101. This plugin has a 902 priority, right before the rate-limit that has 901.
+
+If you want a proxy-cache-redis plugin with the original priority so that it is executed after the rate-limit one, just modify the code and change the priority in handler.lua.
+
 ## Installation
 
 You must create the custom dictionary defined in `dict_name`, or the default dictionary `redis_cluster_slot_locks`:
