@@ -50,7 +50,7 @@ local function red_connect(opts)
         auth_user = (opts.cluster_user or nil),
         connect_opts = {
             ssl = (opts.cluster_use_ssl_connection or false),
-            pool = "redis-cluster-connection-pool",
+            -- pool = "", -- We do not use a unique pool, we want node of the cluster has its own pool (resty redis creates them automatically as host:port pools)
             -- we leave the 30 default pool, shared among pool_size and backlog https://github.com/openresty/lua-nginx-module#lua_socket_pool_size
             pool_size = 20,
             backlog = 10
