@@ -1,5 +1,5 @@
 package = "kong-proxy-cache-redis-cluster-plugin"
-version = "1.0.0-0"
+version = "1.0.0-1"
 
 source = {
   url = "git://github.com/ligreman/kong-proxy-cache-redis-cluster-plugin"

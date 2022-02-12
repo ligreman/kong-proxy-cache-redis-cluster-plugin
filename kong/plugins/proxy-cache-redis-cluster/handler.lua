@@ -223,7 +223,7 @@ local function store_cache_value(premature, conf, req_body, status, proxy_cache)
 end
 
 local ProxyCacheHandler = {
-    VERSION = "1.0.0-0",
+    VERSION = "1.0.0-1",
     PRIORITY = 902,
 }
 

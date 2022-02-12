@@ -47,6 +47,7 @@ local function red_connect(opts)
         max_redirection = (opts.cluster_max_redirection or 16),
         max_connection_attempts = (opts.cluster_max_connection_attempts or 3),
         auth = (opts.cluster_password or nil),
+        auth_user = (opts.cluster_user or nil),
         connect_opts = {
             ssl = (opts.cluster_use_ssl_connection or false),
             pool = "redis-cluster-connection-pool",
@@ -61,8 +62,8 @@ local function red_connect(opts)
     end
 
     -- Support for ACL (we send AUTH username password)
-    if is_present(opts.cluster_user) and is_present(opts.cluster_password) then
-        config.auth = opts.cluster_user .. " " .. opts.cluster_password
+    if is_present(opts.cluster_user) then
+        config.auth_user = opts.cluster_user
     end
 
     local red, err_redis = redis_cluster:new(config)
