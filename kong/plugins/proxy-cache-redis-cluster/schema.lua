@@ -72,11 +72,12 @@ return {
                 } },
                 { cluster_user = {
                     type = "string",
-                    len_min = 0,
+                    referenceable = true,                    
                 } },
                 { cluster_password = {
                     type = "string",
                     len_min = 0,
+                    referenceable = true,
                 } },
                 { cluster_connect_timeout = {
                     type = "number",
