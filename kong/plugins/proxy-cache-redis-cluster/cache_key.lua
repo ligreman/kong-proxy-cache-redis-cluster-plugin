@@ -20,6 +20,24 @@ local function keys(t)
     return res
 end
 
+-- Flattens a JSON object converted to lua table
+local function flatten(item, result, key)
+    local result = result or {}  --  create empty table, if none given during initialization
+    local key = key or ""
+
+    if type( item ) == 'table' then
+        for k, v in pairs( item ) do
+            if type(k) == 'number' then
+                flatten(v, result, key)
+            else
+                flatten(v, result, key .. k)
+            end
+        end
+    else
+        result[ #result +1 ] = key .. tostring(item)
+    end
+    return result
+end
 
 -- Return a string with the format "key=value(:key=value)*" of the
 -- actual keys and values in args that are in vary_fields.
@@ -35,7 +53,9 @@ local function generate_key_from(args, vary_fields, is_json)
         local arg = args[field]
         if arg then
             if is_json == true and type(arg) == "table" then
-                insert(cache_key, field .. "=" .. "#")
+                local newTable = flatten(arg)
+                sort(newTable)
+                insert(cache_key, field .. "=" .. concat(newTable, ";"))
 
             elseif type(arg) == "table" then
                 sort(arg)
